@@ -20,6 +20,7 @@ public class ControllerPortada : MonoBehaviour
         
         print("Cambiando a la escena "+ name);
         SceneManager.LoadScene(name);
+
         
     }
     

@@ -15,6 +15,7 @@ public class Controller : MonoBehaviour
 
     private void Start() {
         //Choose the port choosed in the dropdown in Portada Scene
+        print(Info.getChoosenOption);
         port = Info.getChoosenOption;
         stream = new SerialPort(port,9600);
      

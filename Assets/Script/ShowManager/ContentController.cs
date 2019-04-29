@@ -5,16 +5,24 @@ using UnityEngine.UI;
 
 
 
+
 public class ContentController : MonoBehaviour
 {
+
+    public GameObject controllerObject ;
+
+
 
     public List<GameObject> gameObjectList;
     
     // Reference to the Prefab. Drag a Prefab into this field in the Inspector.
     public GameObject myPrefab;
+    public InputField commandText;
+    
 
 
-    public void AddObjectToList(){
+    public void AddObjectToList(string name){
+
 
         gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
         int index = gameObjectList.Count -1;
@@ -24,30 +32,39 @@ public class ContentController : MonoBehaviour
         Text[] components = gameObjectList[index].GetComponentsInChildren<Text>();
         gameObjectList[index].name = "(" + gameObjectList.Count.ToString() + ")";
         components[0].text = gameObjectList.Count.ToString();
-        components[1].text = "show"+ gameObjectList.Count.ToString();
+        components[1].text = commandText.text;
 
+        commandText.text = "";
+
+    }
+
+    public void RemoveLastObject(){
+        print("Nombre de gameobject antes de elminacion : " + gameObjectList.Count);
+        Destroy(gameObjectList[gameObjectList.Count-1]);
+        gameObjectList.Remove(gameObjectList[gameObjectList.Count-1]);
+        print("Nombre de gameobject despues de elminacion : " + gameObjectList.Count);
 
     }
 
-    // This script will simply instantiate the Prefab when the game starts.
-    void Start()
-    {
-        /* // Instantiate at position (0, 0, 0) and zero rotation.
+    public void SaveList(){
+        string json = JsonUtility.ToJson(gameObjectList);
+        Debug.Log(json);
+    }
 
-        gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
-        gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
-        gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
+    public void PlayAllCommands(){
+        foreach (var item in gameObjectList)
+        {
+            Text[] components = item.GetComponentsInChildren<Text>();
+            Controller controller = controllerObject.GetComponentInChildren<Controller>();
+            print(controller.name + ": "+ components[1].text);   
+            controller.WriteToArduino(components[1].text);
 
+              
 
-        print(gameObjectList[0].name);
-        Text[] components = gameObjectList[0].GetComponentsInChildren<Text>();
-
-        components[0].text = "18";
-        print(components[0].name);
-        components[1].text = "show3";
-        print(components[1].name);
-
-        */
+        }
 
     }
+
+
+ 
 }
