@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using UnityEditor;
 
 
 
@@ -66,6 +67,10 @@ public class ContentController : MonoBehaviour
         CommandList commandList = new CommandList();
         List<string> contentDataList = new List<string>();
         
+        // We save all our gameobjectlist in a contentDataList 
+        //for save commands because we can't save instanciate GameObjects 
+        //, so we just need to save commands and save 
+        // them in the same order
         foreach (var item in gameObjectList)
         {
             Text[] components = item.GetComponentsInChildren<Text>();
@@ -75,7 +80,19 @@ public class ContentController : MonoBehaviour
 
         commandList.contentDataList = contentDataList ;
         string json = JsonUtility.ToJson(commandList);
-        File.WriteAllText(Application.dataPath+"/DATA/saveFile.json",json);
+
+        // Open file explorer to choose what json we want to save
+        string path = EditorUtility.SaveFilePanel(
+            "Save command list as Json",
+            "",
+            "commandSaveList"+ ".json",
+            "json");
+
+        if (path.Length != 0)
+        {
+            File.WriteAllText(path,json);
+
+        }
  
         print("File Saved");
         
@@ -85,16 +102,23 @@ public class ContentController : MonoBehaviour
 
     public void LoadList(){
 
-        string json = File.ReadAllText(Application.dataPath+"/DATA/saveFile.json");
-        CommandList loadedGameObjectList = JsonUtility.FromJson<CommandList>(json);
-        int nbElements = gameObjectList.Count;
+        // Open file explorer to choose what json we want to load
+        string path = EditorUtility.OpenFilePanel("Overwrite with json", Application.dataPath+"/DATA/", "json");
+        if (path.Length != 0)
+        {
+            string json = File.ReadAllText(path);
+            CommandList loadedGameObjectList = JsonUtility.FromJson<CommandList>(json);
+            int nbElements = gameObjectList.Count;
 
-        for(int i = 0; i<nbElements ; i++){
-            RemoveLastObject();
+            for(int i = 0; i<nbElements ; i++){
+                RemoveLastObject();
+            }
+            foreach(var item in loadedGameObjectList.contentDataList){
+                AddObjectToList(item);
+            }
         }
-        foreach(var item in loadedGameObjectList.contentDataList){
-            AddObjectToList(item);
-        }
+    
+    
 
     }
 
@@ -118,6 +142,7 @@ public class ContentController : MonoBehaviour
     }
 
 
+    //AddObjectToList if we detect "Enter" keytouch
     private void Update() {
         
          if (Input.GetKeyDown(KeyCode.Return) ) {
