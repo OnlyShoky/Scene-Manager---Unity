@@ -32,6 +32,10 @@ public class ContentController : MonoBehaviour
 
         commandText.text = "";
 
+        //Keep the inputfield activated for continu to tap.
+        commandText.ActivateInputField();
+
+
     }
 
     public void AddObjectToList(string name){
@@ -43,6 +47,7 @@ public class ContentController : MonoBehaviour
         gameObjectList[index].name = "(" + gameObjectList.Count.ToString() + ")";
         components[0].text = gameObjectList.Count.ToString();
         components[1].text = name;
+
 
 
     }
@@ -71,8 +76,8 @@ public class ContentController : MonoBehaviour
         commandList.contentDataList = contentDataList ;
         string json = JsonUtility.ToJson(commandList);
         File.WriteAllText(Application.dataPath+"/DATA/saveFile.json",json);
-        print(Application.dataPath);
-        print(json);
+ 
+        print("File Saved");
         
 
  
@@ -112,6 +117,15 @@ public class ContentController : MonoBehaviour
 
     }
 
+
+    private void Update() {
+        
+         if (Input.GetKeyDown(KeyCode.Return) ) {
+            AddObjectToList();
+
+            
+         }
+    }
 
 
 
