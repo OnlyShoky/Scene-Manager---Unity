@@ -19,26 +19,48 @@ public class ContentController : MonoBehaviour
     private List<string> contentDataList;
 
 
+    private bool VerifyCommand(string command){
+
+
+        string[] fileText = File.ReadAllLines(Application.dataPath+"/DATA/CommandReference.txt");
+
+        foreach(var line in fileText){
+            // Line to catch the command name between "" 
+            string commandReference = line.Split(',')[0].Substring(1,line.Split(',')[0].Length-2);
+
+            if(command.Equals(commandReference))
+                return true;
+
+        }
+
+        return false;
+
+    }
 
     //Add a command to the list , the text in the input field will be the command , and the number is the last number plus one
     public void AddObjectToList(){
 
-        gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
-        int index = gameObjectList.Count -1;
-            
-        Text[] components = gameObjectList[index].GetComponentsInChildren<Text>();
-        gameObjectList[index].name = "(" + gameObjectList.Count.ToString() + ")";
-        components[0].text = gameObjectList.Count.ToString();
-        components[1].text = commandText.text;
+        if(VerifyCommand(commandText.text)){
+            gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
+            int index = gameObjectList.Count -1;
+                
+            Text[] components = gameObjectList[index].GetComponentsInChildren<Text>();
+            gameObjectList[index].name = "(" + gameObjectList.Count.ToString() + ")";
+            components[0].text = gameObjectList.Count.ToString();
+            components[1].text = commandText.text;
 
-        commandText.text = "";
+            commandText.text = "";
 
-        //Keep the inputfield activated for continu to tap.
-        commandText.ActivateInputField();
+            //Keep the inputfield activated for continu to tap.
+            commandText.ActivateInputField();
+        }else{
+           EditorUtility.DisplayDialog("Error!","Command not found on the file CommandReference.txt","OK");
+        }
 
 
     }
 
+    //Overide method to add and object choosing the name
     public void AddObjectToList(string name){
 
         gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
@@ -54,11 +76,26 @@ public class ContentController : MonoBehaviour
     }
 
     //Remove the last object of the list
-    public void RemoveLastObject(){
+    public void RemoveLast(){
         Destroy(gameObjectList[gameObjectList.Count-1]);
         gameObjectList.Remove(gameObjectList[gameObjectList.Count-1]);
 
     }
+
+    public void RemoveAll(){
+        int nbElements = gameObjectList.Count;
+        for(int i = 0; i<nbElements ; i++){
+                RemoveLast();
+            }
+    }
+
+    private void removeItem(GameObject gameObject){
+        Destroy(gameObject);
+        gameObjectList.Remove(gameObject);
+
+    }
+
+
 
     //Save list to json
     public void SaveList(){
@@ -110,9 +147,8 @@ public class ContentController : MonoBehaviour
             CommandList loadedGameObjectList = JsonUtility.FromJson<CommandList>(json);
             int nbElements = gameObjectList.Count;
 
-            for(int i = 0; i<nbElements ; i++){
-                RemoveLastObject();
-            }
+            RemoveAll();
+
             foreach(var item in loadedGameObjectList.contentDataList){
                 AddObjectToList(item);
             }
@@ -124,14 +160,20 @@ public class ContentController : MonoBehaviour
 
     //Excute all the commands from the list
     public void PlayAllCommands(){
+        string totalCommand = "";
+        
+        Controller controller = controllerObject.GetComponentInChildren<Controller>();
+        
         foreach (var item in gameObjectList)
         {
+           
             Text[] components = item.GetComponentsInChildren<Text>();
-            Controller controller = controllerObject.GetComponentInChildren<Controller>();
-            print(controller.name + ": "+ components[1].text);   
-            controller.WriteToArduino(components[1].text);
+            totalCommand = totalCommand + components[1].text +"\r" ;
+            //controller.WriteToArduino(components[1].text);
 
         }
+        print(totalCommand);
+        controller.WriteToArduino(totalCommand);
 
     }
 
@@ -145,11 +187,37 @@ public class ContentController : MonoBehaviour
     //AddObjectToList if we detect "Enter" keytouch
     private void Update() {
         
-         if (Input.GetKeyDown(KeyCode.Return) ) {
-            AddObjectToList();
+        if (Input.GetKeyDown(KeyCode.Return) ) {
+            AddObjectToList();         
+        }
 
-            
-         }
+        if (Input.GetKeyDown(KeyCode.Delete) ) {
+
+            List<GameObject> objectsToDelte = new List<GameObject>();
+            int decalage = 0 ;
+            foreach(var item in gameObjectList){
+
+                
+                Text[] components = item.GetComponentsInChildren<Text>();
+                int order = int.Parse(components[0].text) -decalage ;
+                item.name = "(" + order.ToString() + ")";
+                components[0].text = order.ToString();
+                
+
+           
+                SelectablePlus selectable = item.GetComponent<SelectablePlus>();
+                
+                if(selectable.isSelected()){
+                    objectsToDelte.Add(item);
+                    decalage++;
+                }
+
+            }
+
+            foreach(var item in objectsToDelte ){
+                removeItem(item);
+            }
+        }
     }
 
 

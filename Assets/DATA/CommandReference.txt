@@ -1,0 +1,9 @@
+"GreenLedON",GreenLedON
+"GreenLedOFF",GreenLedOFF
+"YellowLedON",YellowLedON
+"YellowLedOFF",YellowLedOFF
+"RedLedON",RedLedON
+"RedLedOFF",RedLedOFF
+"Show1",Show1
+"Wait500",Wait500
+"Wait1000",Wait1000
