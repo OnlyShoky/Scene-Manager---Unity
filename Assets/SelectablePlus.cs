@@ -25,7 +25,6 @@ private void Update() {
 
     if( (IsPressed()==false) && (pressed == true)){
         selected = !selected;
-        
         pressed = false ;
     }
 

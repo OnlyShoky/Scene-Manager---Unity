@@ -15,13 +15,13 @@ public class Controller : MonoBehaviour
 
     private void Start() {
         //Choose the port choosed in the dropdown in Portada Scene
-        print(Info.getChoosenOption);
+        print("Conectado al puerto :" + Info.getChoosenOption);
         port = Info.getChoosenOption;
         stream = new SerialPort(port,9600);
      
         //Open the port
         stream.Open();
-        print("Puerto Abierto Satisfactoriamente");
+        print("Conectado satisfactoriamente");
 
     }
     

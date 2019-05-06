@@ -16,6 +16,10 @@ public class ContentController : MonoBehaviour
     // Reference to the Prefab. Drag a Prefab into this field in the Inspector.
     public GameObject myPrefab;
     public InputField commandText;
+    public InputField startTime;
+
+    public InputField durationTime;
+
     private List<string> contentDataList;
 
 
@@ -48,8 +52,56 @@ public class ContentController : MonoBehaviour
             gameObjectList[index].name = "(" + gameObjectList.Count.ToString() + ")";
             components[0].text = gameObjectList.Count.ToString();
             components[1].text = commandText.text;
+            components[2].text = startTime.text;
+            components[3].text = durationTime.text;
 
+
+            // Calculate the total duration
+            string[] startSeparado =  components[2].text.Split(':');
+            string[] durationSeparado =  components[3].text.Split(':');
+
+            components[4].text= "" ;
+            components[2].text= "" ;
+            components[3].text= "" ;
+
+        
+            // Number of parameters to define hours , minutes , seconds , in this case 3 because we use the system hh:mm:ss
+            int totalParams = 3 ;
+
+            // Convert the Starttime and durationtime on the format HH:MM:SS and sum this two times to create end duration , with the same format
+            for(int i =0 ; i < 3 ; i++){
+                int value = 0;
+
+                if(totalParams-i <= startSeparado.Length){
+                    value = value + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]) ;
+                    if(startSeparado.Length -(totalParams-i) < startSeparado.Length-1)
+                        components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00") +":";
+                    else
+                        components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00");
+                }else
+                    components[2].text = components[2].text + "00:";
+        
+
+                if(totalParams-i <= durationSeparado.Length){
+                    value = value + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]) ;
+                    if(durationSeparado.Length -(totalParams-i) < durationSeparado.Length-1)
+                        components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") +":";
+                    else
+                        components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") ;
+                }else
+                    components[3].text = components[3].text + "00:";
+
+                if(i<totalParams-1)
+                    components[4].text = components[4].text + value.ToString("00") + ":";
+                else
+                    components[4].text = components[4].text + value.ToString("00") ;
+            }
+
+
+            //Erase the text in the input field
             commandText.text = "";
+            durationTime.text= "";
+            startTime.text="";
 
             //Keep the inputfield activated for continu to tap.
             commandText.ActivateInputField();
@@ -61,7 +113,7 @@ public class ContentController : MonoBehaviour
     }
 
     //Overide method to add and object choosing the name
-    public void AddObjectToList(string name){
+    public void AddObjectToList(string name,string startTime, string durationTime){
 
         gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
         int index = gameObjectList.Count -1;
@@ -71,6 +123,50 @@ public class ContentController : MonoBehaviour
         components[0].text = gameObjectList.Count.ToString();
         components[1].text = name;
 
+        components[2].text = startTime;
+        components[3].text = durationTime;
+
+
+        // Calculate the total duration
+        string[] startSeparado =  components[2].text.Split(':');
+        string[] durationSeparado =  components[3].text.Split(':');
+
+        components[4].text= "" ;
+        components[2].text= "" ;
+        components[3].text= "" ;
+
+    
+        // Number of parameters to define hours , minutes , seconds , in this case 3 because we use the system hh:mm:ss
+        int totalParams = 3 ;
+
+        // Convert the Starttime and durationtime on the format HH:MM:SS and sum this two times to create end duration , with the same format
+        for(int i =0 ; i < 3 ; i++){
+            int value = 0;
+
+            if(totalParams-i <= startSeparado.Length){
+                value = value + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]) ;
+                if(startSeparado.Length -(totalParams-i) < startSeparado.Length-1)
+                    components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00") +":";
+                else
+                    components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00");
+            }else
+                components[2].text = components[2].text + "00:";
+    
+
+            if(totalParams-i <= durationSeparado.Length){
+                value = value + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]) ;
+                if(durationSeparado.Length -(totalParams-i) < durationSeparado.Length-1)
+                    components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") +":";
+                else
+                    components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") ;
+            }else
+                components[3].text = components[3].text + "00:";
+
+            if(i<totalParams-1)
+                components[4].text = components[4].text + value.ToString("00") + ":";
+            else
+                components[4].text = components[4].text + value.ToString("00") ;
+        }
 
 
     }
@@ -82,6 +178,7 @@ public class ContentController : MonoBehaviour
 
     }
 
+    //Remove all the elements from the list
     public void RemoveAll(){
         int nbElements = gameObjectList.Count;
         for(int i = 0; i<nbElements ; i++){
@@ -89,6 +186,7 @@ public class ContentController : MonoBehaviour
             }
     }
 
+    //Remove the item that we pass in parameter
     private void removeItem(GameObject gameObject){
         Destroy(gameObject);
         gameObjectList.Remove(gameObject);
@@ -103,6 +201,8 @@ public class ContentController : MonoBehaviour
         
         CommandList commandList = new CommandList();
         List<string> contentDataList = new List<string>();
+        List<string> startTimeList= new List<string>();
+        List<string> durationTimeList= new List<string>();
         
         // We save all our gameobjectlist in a contentDataList 
         //for save commands because we can't save instanciate GameObjects 
@@ -113,9 +213,15 @@ public class ContentController : MonoBehaviour
             Text[] components = item.GetComponentsInChildren<Text>();
             Controller controller = controllerObject.GetComponentInChildren<Controller>();
             contentDataList.Add(components[1].text);
+            startTimeList.Add(components[2].text);
+            durationTimeList.Add(components[3].text);
+
         }
 
         commandList.contentDataList = contentDataList ;
+        commandList.startTimeList = startTimeList ;
+        commandList.durationTimeList = durationTimeList ;
+
         string json = JsonUtility.ToJson(commandList);
 
         // Open file explorer to choose what json we want to save
@@ -145,18 +251,34 @@ public class ContentController : MonoBehaviour
         {
             string json = File.ReadAllText(path);
             CommandList loadedGameObjectList = JsonUtility.FromJson<CommandList>(json);
-            int nbElements = gameObjectList.Count;
 
             RemoveAll();
 
+
+            for(int i=0 ; i< loadedGameObjectList.contentDataList.Count ;i++){
+                AddObjectToList(loadedGameObjectList.contentDataList[i],loadedGameObjectList.startTimeList[i],
+                loadedGameObjectList.durationTimeList[i]);
+            }
+            /* 
             foreach(var item in loadedGameObjectList.contentDataList){
                 AddObjectToList(item);
             }
+            */
         }
     
     
 
     }
+
+    
+    [System.Serializable]
+    private class CommandList{
+        public List<string> contentDataList;
+        public List<string> startTimeList;
+        public List<string> durationTimeList;
+
+    }
+
 
     //Excute all the commands from the list
     public void PlayAllCommands(){
@@ -166,20 +288,13 @@ public class ContentController : MonoBehaviour
         
         foreach (var item in gameObjectList)
         {
-           
+           // The \r indicates the end of a command
             Text[] components = item.GetComponentsInChildren<Text>();
             totalCommand = totalCommand + components[1].text +"\r" ;
-            //controller.WriteToArduino(components[1].text);
 
         }
         print(totalCommand);
         controller.WriteToArduino(totalCommand);
-
-    }
-
-    [System.Serializable]
-    public class CommandList{
-        public List<string> contentDataList;
 
     }
 

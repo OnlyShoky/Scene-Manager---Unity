@@ -7,3 +7,7 @@
 "Show1",Show1
 "Wait500",Wait500
 "Wait1000",Wait1000
+"1",cabA.stopAll
+"2",cabA.setHeat
+"3",cabA.setVibration
+"4",cabA.setWaiting
