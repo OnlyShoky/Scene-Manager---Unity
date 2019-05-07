@@ -15,12 +15,15 @@ public class ContentController : MonoBehaviour
     public List<GameObject> gameObjectList;
     // Reference to the Prefab. Drag a Prefab into this field in the Inspector.
     public GameObject myPrefab;
-    public InputField commandText;
-    public InputField startTime;
+    public InputField commandText,startTime,durationTime;
 
-    public InputField durationTime;
+    public Text timeText ;
 
     private List<string> contentDataList;
+
+    private float executionTime = 0 ;
+
+    private bool playP = false ;
 
 
     private bool VerifyCommand(string command){
@@ -41,73 +44,135 @@ public class ContentController : MonoBehaviour
 
     }
 
+    //Verify that the current element that we will add , has a startTime bigger that the last element
+    private bool VerifyOrderLogic(string startTime){
+
+        int index = gameObjectList.Count -1;
+
+        if(index >=0){
+
+            if(startTime =="")
+                return false ;
+                
+            Text[] components = gameObjectList[index].GetComponentsInChildren<Text>();        
+
+            // Calculate the total duration  
+            string[] startSeparadoPrevious =  components[2].text.Split(':');
+            string[] startSeparado =  startTime.Split(':');
+
+
+
+            long value = TimeToFloat(startTime);
+            long valuePrevious = int.Parse(startSeparadoPrevious[0])*3600 + int.Parse(startSeparadoPrevious[1])*60 + int.Parse(startSeparadoPrevious[2]) ;
+
+            if(value >= valuePrevious)
+                return true;
+            else
+                return false;
+        }else        
+            return true;
+        
+        
+
+    }
+
+    // Transform a string on the format HH:MM:SS to an int corresponding of the number of seconds
+    private long TimeToFloat(string timeInFormat){
+        string[] startSeparado =  timeInFormat.Split(':');
+
+        int value =0 ;
+        if(startSeparado.Length ==1)
+            value = int.Parse(startSeparado[0]);
+        else 
+            if(startSeparado.Length ==2)
+                value =  int.Parse(startSeparado[0])*60 + int.Parse(startSeparado[1]) ;
+            else
+                value = int.Parse(startSeparado[0])*3600 + int.Parse(startSeparado[1])*60 + int.Parse(startSeparado[2]) ;
+
+        return value;
+                
+    }
+
     //Add a command to the list , the text in the input field will be the command , and the number is the last number plus one
     public void AddObjectToList(){
 
         if(VerifyCommand(commandText.text)){
-            gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
-            int index = gameObjectList.Count -1;
+            if(VerifyOrderLogic(startTime.text)){
+                gameObjectList.Add(Instantiate(myPrefab, new Vector3(0, 0, 0), Quaternion.identity,gameObject.transform));
+                int index = gameObjectList.Count -1;
+                    
+                Text[] components = gameObjectList[index].GetComponentsInChildren<Text>();
+                gameObjectList[index].name = "(" + gameObjectList.Count.ToString() + ")";
+                components[0].text = gameObjectList.Count.ToString();
+                components[1].text = commandText.text;
                 
-            Text[] components = gameObjectList[index].GetComponentsInChildren<Text>();
-            gameObjectList[index].name = "(" + gameObjectList.Count.ToString() + ")";
-            components[0].text = gameObjectList.Count.ToString();
-            components[1].text = commandText.text;
-            components[2].text = startTime.text;
-            components[3].text = durationTime.text;
+                if(startTime.text !="")
+                    components[2].text = startTime.text ;
+                else              
+                    components[2].text = "0";
+                    
+                if(durationTime.text !="")
+                    components[3].text = durationTime.text;
+                else              
+                    components[3].text = "1";
+            
 
 
-            // Calculate the total duration
-            string[] startSeparado =  components[2].text.Split(':');
-            string[] durationSeparado =  components[3].text.Split(':');
+                // Calculate the total duration
+                string[] startSeparado =  components[2].text.Split(':');
+                string[] durationSeparado =  components[3].text.Split(':');
 
-            components[4].text= "" ;
-            components[2].text= "" ;
-            components[3].text= "" ;
+                components[4].text= "" ;
+                components[2].text= "" ;
+                components[3].text= "" ;
 
-        
-            // Number of parameters to define hours , minutes , seconds , in this case 3 because we use the system hh:mm:ss
-            int totalParams = 3 ;
+            
+                // Number of parameters to define hours , minutes , seconds , in this case 3 because we use the system hh:mm:ss
+                int totalParams = 3 ;
 
-            // Convert the Starttime and durationtime on the format HH:MM:SS and sum this two times to create end duration , with the same format
-            for(int i =0 ; i < 3 ; i++){
-                int value = 0;
+                // Convert the Starttime and durationtime on the format HH:MM:SS and sum this two times to create end duration , with the same format
+                for(int i =0 ; i < 3 ; i++){
+                    int value = 0;
 
-                if(totalParams-i <= startSeparado.Length){
-                    value = value + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]) ;
-                    if(startSeparado.Length -(totalParams-i) < startSeparado.Length-1)
-                        components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00") +":";
+                    if(totalParams-i <= startSeparado.Length){
+                        value = value + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]) ;
+                        if(startSeparado.Length -(totalParams-i) < startSeparado.Length-1)
+                            components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00") +":";
+                        else
+                            components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00");
+                    }else
+                        components[2].text = components[2].text + "00:";
+            
+
+                    if(totalParams-i <= durationSeparado.Length){
+                        value = value + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]) ;
+                        if(durationSeparado.Length -(totalParams-i) < durationSeparado.Length-1)
+                            components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") +":";
+                        else
+                            components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") ;
+                    }else
+                        components[3].text = components[3].text + "00:";
+
+                    if(i<totalParams-1)
+                        components[4].text = components[4].text + value.ToString("00") + ":";
                     else
-                        components[2].text = components[2].text + int.Parse(startSeparado[startSeparado.Length -(totalParams-i)]).ToString("00");
-                }else
-                    components[2].text = components[2].text + "00:";
-        
-
-                if(totalParams-i <= durationSeparado.Length){
-                    value = value + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]) ;
-                    if(durationSeparado.Length -(totalParams-i) < durationSeparado.Length-1)
-                        components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") +":";
-                    else
-                        components[3].text = components[3].text + int.Parse(durationSeparado[durationSeparado.Length -(totalParams-i)]).ToString("00") ;
-                }else
-                    components[3].text = components[3].text + "00:";
-
-                if(i<totalParams-1)
-                    components[4].text = components[4].text + value.ToString("00") + ":";
-                else
-                    components[4].text = components[4].text + value.ToString("00") ;
-            }
+                        components[4].text = components[4].text + value.ToString("00") ;
+                }
 
 
-            //Erase the text in the input field
-            commandText.text = "";
-            durationTime.text= "";
-            startTime.text="";
+                //Erase the text in the input field
+                commandText.text = "";
+                durationTime.text= "";
+                startTime.text="";
 
-            //Keep the inputfield activated for continu to tap.
-            commandText.ActivateInputField();
-        }else{
-           EditorUtility.DisplayDialog("Error!","Command not found on the file CommandReference.txt","OK");
+                //Keep the inputfield activated for continu to tap.
+                commandText.ActivateInputField();
         }
+            else
+                EditorUtility.DisplayDialog("Error!","Start time bigger than the last command","OK");
+        }else
+           EditorUtility.DisplayDialog("Error!","Command not found on the file CommandReference.txt","OK");
+        
 
 
     }
@@ -259,11 +324,7 @@ public class ContentController : MonoBehaviour
                 AddObjectToList(loadedGameObjectList.contentDataList[i],loadedGameObjectList.startTimeList[i],
                 loadedGameObjectList.durationTimeList[i]);
             }
-            /* 
-            foreach(var item in loadedGameObjectList.contentDataList){
-                AddObjectToList(item);
-            }
-            */
+        
         }
     
     
@@ -281,21 +342,75 @@ public class ContentController : MonoBehaviour
 
 
     //Excute all the commands from the list
-    public void PlayAllCommands(){
-        string totalCommand = "";
+    private void PlayAllCommands(){
         
-        Controller controller = controllerObject.GetComponentInChildren<Controller>();
+        if(playP){
+            executionTime += Time.deltaTime % long.MaxValue;
+
+            long maxEndTime= 0 ;
+
+            //Update of timerText 
+            int valueM = (int) executionTime /60 ;
+            int valueS = (int) executionTime %60 ;
+            int valueH = valueM /60 ;
+            valueM = valueM % 60 ;
+
+            timeText.text =valueH.ToString("00") +":" +valueM.ToString("00") +":" + valueS.ToString("00");
+
+            //Command update , choose all the commands to send
+            string totalCommand = "";
+            Controller controller = controllerObject.GetComponentInChildren<Controller>();
         
-        foreach (var item in gameObjectList)
-        {
-           // The \r indicates the end of a command
-            Text[] components = item.GetComponentsInChildren<Text>();
-            totalCommand = totalCommand + components[1].text +"\r" ;
+            for(int i =0 ; i< gameObjectList.Count ; i++){
+                
+
+                // The \r indicates the end of a command
+                Text[] components = gameObjectList[i].GetComponentsInChildren<Text>();
+                long startTime = TimeToFloat(components[2].text);
+                long endTime = TimeToFloat(components[4].text);
+                long actualTime = (long) executionTime ;
+
+                if(maxEndTime< endTime)
+                    maxEndTime= endTime ;
+
+
+                //Picking the commands when its their time and changing the color to known which is activated
+                if(actualTime >= startTime && actualTime < endTime ){
+                    totalCommand = totalCommand + components[1].text +"\r" ;
+                    gameObjectList[i].GetComponent<Image>().color = Color.green;
+                }else
+                {
+                    gameObjectList[i].GetComponent<Image>().color = Color.white;
+                }
+            }
+            
+            if(totalCommand != ""){
+                controller.WriteToArduino(totalCommand);
+            }
+
+            //Stops when it's finish
+            if(maxEndTime < (long)executionTime)
+                StopPlayer();
 
         }
-        print(totalCommand);
-        controller.WriteToArduino(totalCommand);
 
+
+    }
+
+    public void StartPlayer(){
+        playP = true ;
+        
+    }
+
+    public void StopPlayer(){
+        playP = false; ;
+        executionTime= 0 ;
+        timeText.text = "00:00:00";
+
+    }
+
+    public void PausePlayer(){
+        playP = false; 
     }
 
 
@@ -333,6 +448,8 @@ public class ContentController : MonoBehaviour
                 removeItem(item);
             }
         }
+
+        PlayAllCommands();
     }
 
 

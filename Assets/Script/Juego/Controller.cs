@@ -50,8 +50,8 @@ public class Controller : MonoBehaviour
 
 
     //Read the serial port from arduino
-    public string ReadFromArduino (int timeout = 0) {
-        stream.ReadTimeout = timeout;  
+    /*public string ReadFromArduino (int timeout = 0) {
+         stream.ReadTimeout = timeout;  
         
         try {
             return stream.ReadLine();
@@ -59,16 +59,16 @@ public class Controller : MonoBehaviour
         catch (System.Exception) {
             return null;
         }
-    }
+    }*/
 
     // Print all messages geted from arduino
-    private void Update() {
+    /* private void Update() {
         string message = ReadFromArduino(50);
         if(message != null){
             print(message);
         }
 
-    }
+    }*/
 
 
 
